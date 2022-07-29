@@ -19,7 +19,7 @@ type TrainDTO struct {
 	DepartureTime      string  `json:"departureTime"`
 }
 
-type Trains []TrainDTO
+type Trains []Train
 
 type Train struct {
 	TrainID            int       `json:"trainId"`
