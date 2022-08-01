@@ -53,6 +53,7 @@ func findTrains(departureStation, arrivalStation, criteria string) (Trains, erro
 	if err != nil {
 		return nil, err
 	}
+	//select all trains on a given route
 	currentTrainsByStation, err := unmarshalByte(sliceByte, departureStation, arrivalStation)
 	if err != nil {
 		return nil, err
@@ -128,7 +129,7 @@ func unmarshalByte(sliceByte []byte, departureStation, arrivalStation string) (T
 func parseTime(date string) time.Time {
 	returnDate, err := time.Parse("15:04:05", date)
 	if err != nil {
-		fmt.Println("err parseTime")
+		fmt.Println("error parseTime")
 	}
 	return returnDate
 }
