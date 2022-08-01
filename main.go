@@ -37,7 +37,6 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(result)
 	for _, train := range result {
 		fmt.Printf("{TrainID: %d, DepartureStationID: %d, ArrivalStationID: %d, Price: %.2f, ArrivalTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s), DepartureTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s)}\n", train.TrainID, train.DepartureStationID, train.ArrivalStationID, train.Price, train.ArrivalTime.Year(), train.ArrivalTime.Month().String(), train.ArrivalTime.Day(), train.ArrivalTime.Hour(), train.ArrivalTime.Minute(), train.ArrivalTime.Second(), train.ArrivalTime.Nanosecond(), train.ArrivalTime.Location(), train.DepartureTime.Year(), train.DepartureTime.Month().String(), train.DepartureTime.Day(), train.DepartureTime.Hour(), train.DepartureTime.Minute(), train.DepartureTime.Second(), train.DepartureTime.Nanosecond(), train.DepartureTime.Location())
 	}
@@ -85,9 +84,9 @@ func sortTrains(currentTrainsByStation Trains, criteria string) (Trains, error) 
 	return currentTrainsByStation, nil
 }
 
-type TrainsDTO []TrainDTO
+type TrainsMapper []TrainMapper
 
-type TrainDTO struct {
+type TrainMapper struct {
 	TrainID            int     `json:"trainId"`
 	DepartureStationID int     `json:"departureStationId"`
 	ArrivalStationID   int     `json:"arrivalStationId"`
@@ -110,7 +109,7 @@ func unmarshalByte(sliceByte []byte, departureStation, arrivalStation string) (T
 	}
 
 	var currentTrainsByStation Trains
-	var convertTimeTrains TrainsDTO
+	var convertTimeTrains TrainsMapper
 	err = json.Unmarshal(sliceByte, &convertTimeTrains)
 	if err != nil {
 		log.Println("error Unmarshal")
