@@ -73,11 +73,11 @@ func sortTrains(currentTrainsByStation Trains, criteria string) (Trains, error) 
 		})
 	case "arrival-time":
 		sort.SliceStable(currentTrainsByStation, func(i, j int) bool {
-			return currentTrainsByStation[i].ArrivalTime.After(currentTrainsByStation[j].ArrivalTime)
+			return currentTrainsByStation[j].ArrivalTime.After(currentTrainsByStation[i].ArrivalTime)
 		})
 	case "departure-time":
 		sort.SliceStable(currentTrainsByStation, func(i, j int) bool {
-			return currentTrainsByStation[i].DepartureTime.After(currentTrainsByStation[j].DepartureTime)
+			return currentTrainsByStation[j].DepartureTime.After(currentTrainsByStation[i].DepartureTime)
 		})
 	default:
 		return nil, errors.New("unsupported criteria")
