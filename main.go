@@ -107,12 +107,12 @@ func unmarshalByte(sliceByte []byte, departureStation, arrivalStation string) (T
 	var DepartureTime, ArrivalTime time.Time
 
 	departureStationId, err := strconv.Atoi(departureStation)
-	if err != nil || departureStationId <= 0 || len(arrivalStation) != 4 {
+	if err != nil || departureStationId <= 0 {
 		return nil, errors.New("bad departure station input")
 	}
 
 	arrivalStationId, err := strconv.Atoi(arrivalStation)
-	if err != nil || arrivalStationId <= 0 || len(arrivalStation) != 4 {
+	if err != nil || arrivalStationId <= 0 {
 		return nil, errors.New("bad arrival station input")
 	}
 
