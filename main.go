@@ -37,8 +37,12 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	for _, train := range result {
-		fmt.Printf("{TrainID: %d, DepartureStationID: %d, ArrivalStationID: %d, Price: %.2f, ArrivalTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s), DepartureTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s)}\n", train.TrainID, train.DepartureStationID, train.ArrivalStationID, train.Price, train.ArrivalTime.Year(), train.ArrivalTime.Month().String(), train.ArrivalTime.Day(), train.ArrivalTime.Hour(), train.ArrivalTime.Minute(), train.ArrivalTime.Second(), train.ArrivalTime.Nanosecond(), train.ArrivalTime.Location(), train.DepartureTime.Year(), train.DepartureTime.Month().String(), train.DepartureTime.Day(), train.DepartureTime.Hour(), train.DepartureTime.Minute(), train.DepartureTime.Second(), train.DepartureTime.Nanosecond(), train.DepartureTime.Location())
+	if len(result) == 0 {
+		fmt.Println(nil)
+	} else {
+		for _, train := range result {
+			fmt.Printf("{TrainID: %d, DepartureStationID: %d, ArrivalStationID: %d, Price: %.2f, ArrivalTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s), DepartureTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s)}\n", train.TrainID, train.DepartureStationID, train.ArrivalStationID, train.Price, train.ArrivalTime.Year(), train.ArrivalTime.Month().String(), train.ArrivalTime.Day(), train.ArrivalTime.Hour(), train.ArrivalTime.Minute(), train.ArrivalTime.Second(), train.ArrivalTime.Nanosecond(), train.ArrivalTime.Location(), train.DepartureTime.Year(), train.DepartureTime.Month().String(), train.DepartureTime.Day(), train.DepartureTime.Hour(), train.DepartureTime.Minute(), train.DepartureTime.Second(), train.DepartureTime.Nanosecond(), train.DepartureTime.Location())
+		}
 	}
 }
 
@@ -62,7 +66,11 @@ func findTrains(departureStation, arrivalStation, criteria string) (Trains, erro
 	if err != nil {
 		return nil, err
 	}
-	return sortTrainsByStation[:3], nil
+	if len(sortTrainsByStation) == 0 {
+		return nil, err
+	} else {
+		return sortTrainsByStation[:3], nil
+	}
 }
 
 func sortTrains(currentTrainsByStation Trains, criteria string) (Trains, error) {
