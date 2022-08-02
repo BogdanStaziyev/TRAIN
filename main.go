@@ -33,7 +33,7 @@ func main() {
 	fmt.Println("Критерій для сорутування: ")
 	fmt.Scanln(&criteria)
 
-	result, err := findTrains(departureStation, arrivalStation, criteria)
+	result, err := FindTrains(departureStation, arrivalStation, criteria)
 	if err != nil {
 		log.Println(err)
 	} else if len(result) == 0 {
@@ -45,7 +45,7 @@ func main() {
 	}
 }
 
-func findTrains(departureStation, arrivalStation, criteria string) (Trains, error) {
+func FindTrains(departureStation, arrivalStation, criteria string) (Trains, error) {
 	if departureStation == "" {
 		return nil, errors.New("empty departure station")
 	} else if arrivalStation == "" {
