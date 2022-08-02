@@ -36,8 +36,7 @@ func main() {
 	result, err := findTrains(departureStation, arrivalStation, criteria)
 	if err != nil {
 		log.Println(err)
-	}
-	if len(result) == 0 {
+	} else if len(result) == 0 {
 		fmt.Println(nil)
 	} else {
 		for _, train := range result {
