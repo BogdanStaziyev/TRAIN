@@ -36,22 +36,22 @@ func main() {
 	result, err := FindTrains(departureStation, arrivalStation, criteria)
 	if err != nil {
 		log.Println(err)
-	} else if len(result) == 0 {
+	}
+	if len(result) == 0 {
 		fmt.Println(nil)
-	} else {
-		for _, train := range result {
-			fmt.Printf("{TrainID: %d, DepartureStationID: %d, ArrivalStationID: %d, Price: %.2f, ArrivalTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s), DepartureTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s)}\n", train.TrainID, train.DepartureStationID, train.ArrivalStationID, train.Price, train.ArrivalTime.Year(), train.ArrivalTime.Month().String(), train.ArrivalTime.Day(), train.ArrivalTime.Hour(), train.ArrivalTime.Minute(), train.ArrivalTime.Second(), train.ArrivalTime.Nanosecond(), train.ArrivalTime.Location(), train.DepartureTime.Year(), train.DepartureTime.Month().String(), train.DepartureTime.Day(), train.DepartureTime.Hour(), train.DepartureTime.Minute(), train.DepartureTime.Second(), train.DepartureTime.Nanosecond(), train.DepartureTime.Location())
-		}
+	}
+	for _, train := range result {
+		fmt.Printf("{TrainID: %d, DepartureStationID: %d, ArrivalStationID: %d, Price: %.2f, ArrivalTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s), DepartureTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s)}\n", train.TrainID, train.DepartureStationID, train.ArrivalStationID, train.Price, train.ArrivalTime.Year(), train.ArrivalTime.Month().String(), train.ArrivalTime.Day(), train.ArrivalTime.Hour(), train.ArrivalTime.Minute(), train.ArrivalTime.Second(), train.ArrivalTime.Nanosecond(), train.ArrivalTime.Location(), train.DepartureTime.Year(), train.DepartureTime.Month().String(), train.DepartureTime.Day(), train.DepartureTime.Hour(), train.DepartureTime.Minute(), train.DepartureTime.Second(), train.DepartureTime.Nanosecond(), train.DepartureTime.Location())
 	}
 }
 
 func FindTrains(departureStation, arrivalStation, criteria string) (Trains, error) {
 	if departureStation == "" {
 		return nil, errors.New("empty departure station")
-	} else if arrivalStation == "" {
+	}
+	if arrivalStation == "" {
 		return nil, errors.New("empty arrival station")
 	}
-
 	sliceByte, err := ioutil.ReadFile("data.json")
 	if err != nil {
 		return nil, err
@@ -67,9 +67,8 @@ func FindTrains(departureStation, arrivalStation, criteria string) (Trains, erro
 	}
 	if len(sortTrainsByStation) == 0 {
 		return nil, err
-	} else {
-		return sortTrainsByStation[:3], nil
 	}
+	return sortTrainsByStation[:3], nil
 }
 
 func sortTrains(currentTrainsByStation Trains, criteria string) (Trains, error) {
@@ -104,7 +103,7 @@ type TrainMapper struct {
 }
 
 func unmarshalByte(sliceByte []byte, departureStation, arrivalStation string) (Trains, error) {
-	var DepartureTime, ArrivalTime time.Time
+	var departureTime, arrivalTime time.Time
 
 	departureStationId, err := strconv.Atoi(departureStation)
 	if err != nil || departureStationId <= 0 {
@@ -124,10 +123,16 @@ func unmarshalByte(sliceByte []byte, departureStation, arrivalStation string) (T
 	}
 	for _, val := range convertTimeTrains {
 		if departureStationId == val.DepartureStationID && arrivalStationId == val.ArrivalStationID {
-			DepartureTime = parseTime(val.DepartureTime)
-			ArrivalTime = parseTime(val.ArrivalTime)
-			num := Train{val.TrainID, val.DepartureStationID, val.ArrivalStationID, val.Price, ArrivalTime, DepartureTime}
-			currentTrainsByStation = append(currentTrainsByStation, num)
+			departureTime = parseTime(val.DepartureTime)
+			arrivalTime = parseTime(val.ArrivalTime)
+			currentTrainsByStation = append(currentTrainsByStation, Train{
+				val.TrainID,
+				val.DepartureStationID,
+				val.ArrivalStationID,
+				val.Price,
+				arrivalTime,
+				departureTime,
+			})
 		}
 	}
 	return currentTrainsByStation, nil
