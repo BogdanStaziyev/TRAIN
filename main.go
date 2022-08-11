@@ -2,22 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"sort"
+	"strconv"
 	"time"
 )
-
-type TrainsDTO []TrainDTO
-
-type TrainDTO struct {
-	TrainID            int     `json:"trainId"`
-	DepartureStationID int     `json:"departureStationId"`
-	ArrivalStationID   int     `json:"arrivalStationId"`
-	Price              float32 `json:"price"`
-	ArrivalTime        string  `json:"arrivalTime"`
-	DepartureTime      string  `json:"departureTime"`
-}
 
 type Trains []Train
 
@@ -31,28 +23,125 @@ type Train struct {
 }
 
 func main() {
-	sliseBite, err := ioutil.ReadFile("data.json")
-	if err != nil {
-		log.Println("error read all")
-	}
-	b := &TrainsDTO{}
-	err = json.Unmarshal(sliseBite, &b)
-	if err != nil {
-		log.Println("error Unmarshal")
-	}
-	for _, val := range *b {
-		if val.TrainID == 8801 {
-			fmt.Println(val)
-		}
-	}
+	var departureStation, arrivalStation, criteria string
+	fmt.Println("Введіть станцію відправлення: ")
+	fmt.Scanln(&departureStation)
 
-	//	... запит даних від користувача
-	//result, err := FindTrains(departureStation, arrivalStation, criteria))
-	//	... обробка помилки
-	//	... друк result
+	fmt.Println("Введіть станцію прибуття: ")
+	fmt.Scanln(&arrivalStation)
+
+	fmt.Println("Критерій для сорутування: ")
+	fmt.Scanln(&criteria)
+
+	result, err := FindTrains(departureStation, arrivalStation, criteria)
+	if err != nil {
+		log.Println(err)
+	}
+	if len(result) == 0 {
+		fmt.Println(nil)
+	}
+	for _, train := range result {
+		fmt.Printf("{TrainID: %d, DepartureStationID: %d, ArrivalStationID: %d, Price: %.2f, ArrivalTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s), DepartureTime: time.Date(%d, time.%s, %d, %d, %d, %d, %d, time.%s)}\n", train.TrainID, train.DepartureStationID, train.ArrivalStationID, train.Price, train.ArrivalTime.Year(), train.ArrivalTime.Month().String(), train.ArrivalTime.Day(), train.ArrivalTime.Hour(), train.ArrivalTime.Minute(), train.ArrivalTime.Second(), train.ArrivalTime.Nanosecond(), train.ArrivalTime.Location(), train.DepartureTime.Year(), train.DepartureTime.Month().String(), train.DepartureTime.Day(), train.DepartureTime.Hour(), train.DepartureTime.Minute(), train.DepartureTime.Second(), train.DepartureTime.Nanosecond(), train.DepartureTime.Location())
+	}
 }
 
 func FindTrains(departureStation, arrivalStation, criteria string) (Trains, error) {
-	// ... код
-	return nil, nil // маєте повернути правильні значення
+	if departureStation == "" {
+		return nil, errors.New("empty departure station")
+	}
+	if arrivalStation == "" {
+		return nil, errors.New("empty arrival station")
+	}
+	sliceByte, err := ioutil.ReadFile("data.json")
+	if err != nil {
+		return nil, err
+	}
+	//select all trains on a given route
+	currentTrainsByStation, err := unmarshalByte(sliceByte, departureStation, arrivalStation)
+	if err != nil {
+		return nil, err
+	}
+	sortTrainsByStation, err := sortTrains(currentTrainsByStation, criteria)
+	if err != nil {
+		return nil, err
+	}
+	if len(sortTrainsByStation) == 0 {
+		return nil, err
+	}
+	return sortTrainsByStation[:3], nil
+}
+
+func sortTrains(currentTrainsByStation Trains, criteria string) (Trains, error) {
+	switch criteria {
+	case "price":
+		sort.SliceStable(currentTrainsByStation, func(i, j int) bool {
+			return currentTrainsByStation[i].Price < currentTrainsByStation[j].Price
+		})
+	case "arrival-time":
+		sort.SliceStable(currentTrainsByStation, func(i, j int) bool {
+			return currentTrainsByStation[j].ArrivalTime.After(currentTrainsByStation[i].ArrivalTime)
+		})
+	case "departure-time":
+		sort.SliceStable(currentTrainsByStation, func(i, j int) bool {
+			return currentTrainsByStation[j].DepartureTime.After(currentTrainsByStation[i].DepartureTime)
+		})
+	default:
+		return nil, errors.New("unsupported criteria")
+	}
+	return currentTrainsByStation, nil
+}
+
+type TrainsMapper []TrainMapper
+
+type TrainMapper struct {
+	TrainID            int     `json:"trainId"`
+	DepartureStationID int     `json:"departureStationId"`
+	ArrivalStationID   int     `json:"arrivalStationId"`
+	Price              float32 `json:"price"`
+	ArrivalTime        string  `json:"arrivalTime"`
+	DepartureTime      string  `json:"departureTime"`
+}
+
+func unmarshalByte(sliceByte []byte, departureStation, arrivalStation string) (Trains, error) {
+	var departureTime, arrivalTime time.Time
+
+	departureStationId, err := strconv.Atoi(departureStation)
+	if err != nil || departureStationId <= 0 {
+		return nil, errors.New("bad departure station input")
+	}
+
+	arrivalStationId, err := strconv.Atoi(arrivalStation)
+	if err != nil || arrivalStationId <= 0 {
+		return nil, errors.New("bad arrival station input")
+	}
+
+	var currentTrainsByStation Trains
+	var convertTimeTrains TrainsMapper
+	err = json.Unmarshal(sliceByte, &convertTimeTrains)
+	if err != nil {
+		log.Println("error Unmarshal")
+	}
+	for _, val := range convertTimeTrains {
+		if departureStationId == val.DepartureStationID && arrivalStationId == val.ArrivalStationID {
+			departureTime = parseTime(val.DepartureTime)
+			arrivalTime = parseTime(val.ArrivalTime)
+			currentTrainsByStation = append(currentTrainsByStation, Train{
+				val.TrainID,
+				val.DepartureStationID,
+				val.ArrivalStationID,
+				val.Price,
+				arrivalTime,
+				departureTime,
+			})
+		}
+	}
+	return currentTrainsByStation, nil
+}
+
+func parseTime(date string) time.Time {
+	returnDate, err := time.Parse("15:04:05", date)
+	if err != nil {
+		fmt.Println("error parseTime")
+	}
+	return returnDate
 }
